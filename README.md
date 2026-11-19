@@ -11,15 +11,6 @@
 
 ---
 
-## 🎨 Design System & Visuals
-
-Designed strictly following Coy's premium, modern dating app identity:
-- **Primary**: `#7138E8` (Deep Purple)
-- **Secondary**: `#A78BFA` (Lavender)
-- **Background**: `#FAF8FF` (Soft Lavender-White)
-- **Accent**: `#FF6FAE` (Rose Pink for Matches & Sparkles)
-- **Text**: `#19152B` (High contrast midnight slate)
-
 ### Key Screens Implemented
 1. **Discover Tab (Core Feature)**:
    - Full photo card deck with smooth swipe right (Like) and swipe left (Pass) drag gestures via Framer Motion.
