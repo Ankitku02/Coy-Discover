@@ -87,12 +87,3 @@ Open [http://localhost:3000](http://localhost:3000) in your browser!
 
 ---
 
-## 📝 Part A: App Exploration & Feature Suggestions
-
-As requested in Part A of the Coy SDE Intern Assignment:
-
-### 1. **Feature 1: "Vibe Prompts & Audio Snippets"**
-* **Why required**: While photos are great for first impressions, people often struggle to start meaningful conversations based on photos alone. Adding 1-2 interactive voice prompts (e.g. "My Sunday morning ritual is...", or a 15-second voice bio) dramatically humanizes profiles and boosts mutual match reply rates by over 40%, aligning with Coy's personal and authentic dating experience.
-
-### 2. **Feature 2: "Mutual Intent & Dating Goals Tagging"**
-* **Why required**: Mismatched relationship goals (long-term, casual, travel buddy, networking) lead to ghosting and poor user retention. Allowing users to pick a clear "Looking For" badge that is only highlighted when intentions align prevents disappointment and ensures high-quality connections.
