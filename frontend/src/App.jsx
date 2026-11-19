@@ -34,18 +34,20 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-coy-bg text-coy-text flex flex-col font-sans selection:bg-purple-200">
+    <div className="h-screen max-h-screen w-full overflow-hidden bg-coy-bg text-coy-text flex flex-col font-sans selection:bg-purple-200">
       {/* Top App Header */}
       <Navbar activeTab={activeTab} matchesCount={matchesCount} />
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-md mx-auto relative overflow-hidden">
+      <main className="flex-1 w-full max-w-md mx-auto relative overflow-hidden flex flex-col">
         {activeTab === 'home' && (
-          <Home
-            onGoToDiscover={() => setActiveTab('discover')}
-            onGoToMatches={() => setActiveTab('matches')}
-            matchesCount={matchesCount}
-          />
+          <div className="flex-1 overflow-y-auto">
+            <Home
+              onGoToDiscover={() => setActiveTab('discover')}
+              onGoToMatches={() => setActiveTab('matches')}
+              matchesCount={matchesCount}
+            />
+          </div>
         )}
 
         {activeTab === 'discover' && (
@@ -60,7 +62,9 @@ function App() {
         )}
 
         {activeTab === 'matches' && (
-          <Matches onGoToDiscover={() => setActiveTab('discover')} />
+          <div className="flex-1 overflow-y-auto">
+            <Matches onGoToDiscover={() => setActiveTab('discover')} />
+          </div>
         )}
       </main>
 

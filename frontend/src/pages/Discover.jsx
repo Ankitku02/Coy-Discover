@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Loader2, AlertCircle } from 'lucide-react';
 import ProfileCard from '../components/ProfileCard';
 import SwipeButtons from '../components/SwipeButtons';
@@ -37,7 +37,7 @@ const Discover = ({
     loadFeed();
   }, []);
 
-  // Handle Swipe Completion (called by ProfileCard when drag or button animation finishes)
+  // Handle Swipe Completion
   const handleCardSwiped = async (direction) => {
     if (profiles.length === 0) return;
 
@@ -46,7 +46,7 @@ const Discover = ({
     // Reset button trigger
     setButtonTrigger(null);
 
-    // Remove current card from deck
+    // Remove current card from deck immediately
     setProfiles((prev) => prev.slice(1));
 
     try {
@@ -62,11 +62,29 @@ const Discover = ({
     }
   };
 
-  // Triggered by Desktop / Bottom buttons
-  const triggerSwipeFromButton = (direction) => {
-    if (profiles.length === 0 || buttonTrigger) return;
-    setButtonTrigger(direction);
-  };
+  // Triggered by Desktop / Bottom buttons or Keyboard
+  const triggerSwipe = useCallback(
+    (direction) => {
+      if (profiles.length === 0 || buttonTrigger) return;
+      setButtonTrigger(direction);
+    },
+    [profiles.length, buttonTrigger]
+  );
+
+  // Keyboard Navigation: Arrow Right = Like, Arrow Left = Pass
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (selectedProfile || profiles.length === 0) return;
+      if (e.key === 'ArrowRight') {
+        triggerSwipe('like');
+      } else if (e.key === 'ArrowLeft') {
+        triggerSwipe('pass');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedProfile, profiles.length, triggerSwipe]);
 
   // Reset Demo handler
   const handleReset = async () => {
@@ -84,7 +102,7 @@ const Discover = ({
   // Loading State
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+      <div className="flex flex-col items-center justify-center h-full text-center px-4 py-20">
         <div className="w-14 h-14 rounded-2xl bg-purple-100 flex items-center justify-center text-coy-primary mb-3">
           <Loader2 className="w-8 h-8 animate-spin" />
         </div>
@@ -97,7 +115,7 @@ const Discover = ({
   // Error State
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
+      <div className="flex flex-col items-center justify-center h-full text-center px-6 py-20">
         <AlertCircle className="w-12 h-12 text-rose-500 mb-3" />
         <h3 className="text-lg font-bold text-coy-text">Something went wrong</h3>
         <p className="text-xs text-coy-muted mt-1 mb-4">{error}</p>
@@ -126,9 +144,9 @@ const Discover = ({
   const nextProfile = profiles.length > 1 ? profiles[1] : null;
 
   return (
-    <div className="max-w-md mx-auto px-4 pb-24 flex flex-col items-center select-none">
-      {/* Card Deck Container */}
-      <div className="relative w-full aspect-[3/4.2] max-h-[540px] mt-2 mb-2">
+    <div className="w-full h-full flex flex-col justify-between items-center px-4 pt-1 pb-24 select-none">
+      {/* Card Deck Container (Fills available space nicely) */}
+      <div className="relative w-full flex-1 max-h-[460px] min-h-[350px] my-auto">
         {/* Next card in deck (peeking underneath) */}
         {nextProfile && (
           <ProfileCard
@@ -156,12 +174,18 @@ const Discover = ({
       </div>
 
       {/* Action Buttons Below Card (Pass, Info, Like) */}
-      <SwipeButtons
-        onPass={() => triggerSwipeFromButton('pass')}
-        onLike={() => triggerSwipeFromButton('like')}
-        onInfo={() => setSelectedProfile(currentProfile)}
-        disabled={profiles.length === 0 || Boolean(buttonTrigger)}
-      />
+      <div className="w-full flex flex-col items-center shrink-0 z-30 mt-2 mb-1">
+        <SwipeButtons
+          onPass={() => triggerSwipe('pass')}
+          onLike={() => triggerSwipe('like')}
+          onInfo={() => setSelectedProfile(currentProfile)}
+          disabled={profiles.length === 0 || Boolean(buttonTrigger)}
+        />
+        {/* Desktop keyboard hint */}
+        <p className="text-[10px] text-gray-400 font-medium mt-1 hidden sm:block">
+          Press <kbd className="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 font-mono">←</kbd> to Pass, <kbd className="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 font-mono">→</kbd> to Like
+        </p>
+      </div>
 
       {/* Expanded Profile Detail Modal */}
       <ProfileDetailModal
@@ -170,11 +194,11 @@ const Discover = ({
         onClose={() => setSelectedProfile(null)}
         onLike={() => {
           setSelectedProfile(null);
-          triggerSwipeFromButton('like');
+          triggerSwipe('like');
         }}
         onPass={() => {
           setSelectedProfile(null);
-          triggerSwipeFromButton('pass');
+          triggerSwipe('pass');
         }}
       />
     </div>
