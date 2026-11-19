@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { AnimatePresence } from 'framer-motion';
 import { Loader2, AlertCircle } from 'lucide-react';
 import ProfileCard from '../components/ProfileCard';
 import SwipeButtons from '../components/SwipeButtons';
@@ -16,7 +15,7 @@ const Discover = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedProfile, setSelectedProfile] = useState(null);
-  const [isSwiping, setIsSwiping] = useState(false);
+  const [buttonTrigger, setButtonTrigger] = useState(null);
   const [isResetting, setIsResetting] = useState(false);
 
   // Load feed from backend
@@ -38,33 +37,35 @@ const Discover = ({
     loadFeed();
   }, []);
 
-  // Handle Swipe (Like or Pass)
-  const handleSwipe = async (action) => {
-    if (profiles.length === 0 || isSwiping) return;
+  // Handle Swipe Completion (called by ProfileCard when drag or button animation finishes)
+  const handleCardSwiped = async (direction) => {
+    if (profiles.length === 0) return;
 
     const currentProfile = profiles[0];
-    setIsSwiping(true);
 
-    // Optimistically advance cards
-    const remaining = profiles.slice(1);
-    setProfiles(remaining);
+    // Reset button trigger
+    setButtonTrigger(null);
+
+    // Remove current card from deck
+    setProfiles((prev) => prev.slice(1));
 
     try {
-      const response = await submitSwipe(currentProfile._id, action);
+      const response = await submitSwipe(currentProfile._id, direction);
 
-      // Check if this created a mutual match!
-      if (action === 'like' && response.isMatch && response.matchProfile) {
+      // Check for mutual match
+      if (direction === 'like' && response.isMatch && response.matchProfile) {
         onMatchFound(response.matchProfile);
         onOpenMatchModal(response.matchProfile);
       }
     } catch (err) {
-      console.error('Swipe error:', err);
-      // If error is 409 (already swiped), it's safe to continue
-    } finally {
-      setTimeout(() => {
-        setIsSwiping(false);
-      }, 250);
+      console.error('Swipe recording error:', err);
     }
+  };
+
+  // Triggered by Desktop / Bottom buttons
+  const triggerSwipeFromButton = (direction) => {
+    if (profiles.length === 0 || buttonTrigger) return;
+    setButtonTrigger(direction);
   };
 
   // Reset Demo handler
@@ -126,7 +127,7 @@ const Discover = ({
 
   return (
     <div className="max-w-md mx-auto px-4 pb-24 flex flex-col items-center select-none">
-      {/* Card Stack Deck Container */}
+      {/* Card Deck Container */}
       <div className="relative w-full aspect-[3/4.2] max-h-[540px] mt-2 mb-2">
         {/* Next card in deck (peeking underneath) */}
         {nextProfile && (
@@ -139,28 +140,27 @@ const Discover = ({
           />
         )}
 
-        {/* Current front card (interactive with swipe drag) */}
-        <AnimatePresence>
-          {currentProfile && (
-            <ProfileCard
-              key={currentProfile._id}
-              profile={currentProfile}
-              isFront={true}
-              onSwipe={handleSwipe}
-              onOpenDetails={(profile) => setSelectedProfile(profile)}
-              cardIndex={1}
-              totalCards={profiles.length}
-            />
-          )}
-        </AnimatePresence>
+        {/* Current front card (draggable) */}
+        {currentProfile && (
+          <ProfileCard
+            key={currentProfile._id}
+            profile={currentProfile}
+            isFront={true}
+            onSwipe={handleCardSwiped}
+            onOpenDetails={(profile) => setSelectedProfile(profile)}
+            cardIndex={1}
+            totalCards={profiles.length}
+            swipeTrigger={buttonTrigger}
+          />
+        )}
       </div>
 
-      {/* Action Buttons Below Card (Pass, Spark/Details, Like) */}
+      {/* Action Buttons Below Card (Pass, Info, Like) */}
       <SwipeButtons
-        onPass={() => handleSwipe('pass')}
-        onLike={() => handleSwipe('like')}
+        onPass={() => triggerSwipeFromButton('pass')}
+        onLike={() => triggerSwipeFromButton('like')}
         onInfo={() => setSelectedProfile(currentProfile)}
-        disabled={isSwiping || profiles.length === 0}
+        disabled={profiles.length === 0 || Boolean(buttonTrigger)}
       />
 
       {/* Expanded Profile Detail Modal */}
@@ -168,8 +168,14 @@ const Discover = ({
         profile={selectedProfile}
         isOpen={Boolean(selectedProfile)}
         onClose={() => setSelectedProfile(null)}
-        onLike={() => handleSwipe('like')}
-        onPass={() => handleSwipe('pass')}
+        onLike={() => {
+          setSelectedProfile(null);
+          triggerSwipeFromButton('like');
+        }}
+        onPass={() => {
+          setSelectedProfile(null);
+          triggerSwipeFromButton('pass');
+        }}
       />
     </div>
   );
