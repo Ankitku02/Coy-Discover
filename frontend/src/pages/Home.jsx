@@ -14,14 +14,14 @@ const Home = ({ onGoToDiscover }) => {
         Home
       </h2>
 
-      <div className="mt-3 p-4 rounded-2xl bg-purple-50/80 border border-purple-100 text-xs text-coy-muted leading-relaxed max-w-xs">
+      {/* <div className="mt-3 p-4 rounded-2xl bg-purple-50/80 border border-purple-100 text-xs text-coy-muted leading-relaxed max-w-xs">
         <p className="font-semibold text-coy-primary mb-1">
-          📌 Assignment Note:
+           📌 Assignment Note:
         </p>
         <p>
           As specified in Part B of the assignment instructions, the Home tab is kept blank as a placeholder. All discovery and swipe functionality is built in the <strong>Discover</strong> tab.
         </p>
-      </div>
+      </div> */}
 
       {/* Button to go to Discover */}
       <button
